@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Solutions</title>
+    <link href="/css/main.css" rel="stylesheet">
+</head>
+<body class="bg-base-200">
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 shadow-lg px-4">
+        <div class="flex-1">
+            <a href="/" class="btn btn-ghost text-2xl">🌍 Climate Solutions</a>
+        </div>
+        <div class="flex-none">
+            <ul class="menu menu-horizontal px-1 gap-2">
+                <li><a href="/about">About</a></li>
+                <li>
+                    <details>
+                        <summary>Sector</summary>
+                        <ul class="p-2 bg-base-100 shadow">
+                            <li><a href="/solutions/projects?sector=energy">Energy</a></li>
+                            <li><a href="/solutions/projects?sector=agriculture">Agriculture</a></li>
+                            <li><a href="/solutions/projects?sector=transportation">Transportation</a></li>
+                        </ul>
+                    </details>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero min-h-[60vh] bg-primary text-primary-content">
+        <div class="hero-content text-center">
+            <div class="max-w-2xl">
+                <h1 class="text-5xl font-bold mb-6">Sustainable Future Starts Here</h1>
+                <a href="/solutions/projects" class="btn btn-secondary btn-lg">Explore Projects</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Projects -->
+    <div class="container mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Project 1 -->
+            <div class="card bg-base-100 shadow-xl">
+                <figure class="px-4 pt-4">
+                    <img src="https://images.unsplash.com/photo-1613665813446-82a78c468a1d" 
+                         alt="Solar Farm" 
+                         class="rounded-xl h-48 object-cover w-full">
+                </figure>
+                <div class="card-body">
+                    <h2 class="card-title">Solar Power Initiative</h2>
+                    <p>Large-scale solar farm deployment in arid regions</p>
+                    <div class="card-actions justify-end">
+                        <a href="/solutions/projects/1" class="btn btn-primary">Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="card bg-base-100 shadow-xl">
+                <figure class="px-4 pt-4">
+                    <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449" 
+                         alt="Vertical Farming" 
+                         class="rounded-xl h-48 object-cover w-full">
+                </figure>
+                <div class="card-body">
+                    <h2 class="card-title">Urban Vertical Farms</h2>
+                    <p>Sustainable agriculture in urban environments</p>
+                    <div class="card-actions justify-end">
+                        <a href="/solutions/projects/2" class="btn btn-primary">Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="card bg-base-100 shadow-xl">
+                <figure class="px-4 pt-4">
+                    <img src="https://www.buyawg.com/wp-content/uploads/EV-Infrastructure-Diagram-8-30-Final-Light-grey-EV-Pavement-w-building-logo-and-H2-tower@2x.png" 
+                         alt="EV Charging" 
+                         class="rounded-xl h-48 object-cover w-full">
+                </figure>
+                <div class="card-body">
+                    <h2 class="card-title">EV Infrastructure</h2>
+                    <p>Nationwide electric vehicle charging network</p>
+                    <div class="card-actions justify-end">
+                        <a href="/solutions/projects/3" class="btn btn-primary">Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
