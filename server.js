@@ -1,11 +1,11 @@
-/*******************************************************************************
-* WEB322 – Assignment 03
+/***********************
+* WEB322 – Assignment 04
 *
 * I declare that this assignment is my own work in accordance with Seneca's
 * Academic Integrity Policy:
-* https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
-* 
-* Name: Vishavjeet Khatri Student ID: 150215234 Date: 2024-02-15
+* https://www.senecapolytechnic.ca/about/policies/academic-integrity-policy.html
+*
+* Name: Vishavjeet Khatri Student ID: 150215234 Date: 2024-03-10
 *******************************************************************************/
 const express = require("express");
 const projectData = require("./modules/projects");
@@ -14,57 +14,52 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configure static files
-app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
+// Configure EJS
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+// Middleware
+app.use(express.static("public"));
 
 // Routes
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/home.html"));
-});
+app.get("/", (req, res) => res.render("home", { page: "/" }));
+app.get("/about", (req, res) => res.render("about", { page: "/about" }));
 
-app.get("/about", (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/about.html"));
-});
-
-// Updated project routes
 app.get("/solutions/projects", (req, res) => {
     const sector = req.query.sector;
-    
-    if (sector) {
-        projectData.getProjectsBySector(sector)
-            .then(projects => res.json(projects))
-            .catch(err => res.status(404).json({ error: err }));
-    } else {
-        projectData.getAllProjects()
-            .then(projects => res.json(projects))
-            .catch(err => res.status(500).json({ error: "Server error" }));
-    }
+    const promise = sector ? projectData.getProjectsBySector(sector) : projectData.getAllProjects();
+
+    promise.then(projects => {
+        if (projects.length === 0 && sector) {
+            res.status(404).render("404", { 
+                message: `No projects found for sector: ${sector}`,
+                page: ""
+            });
+        } else {
+            res.render("projects", { 
+                projects, 
+                page: "/solutions/projects" 
+            });
+        }
+    }).catch(err => res.status(404).render("404", { message: err }));
 });
 
 app.get("/solutions/projects/:id", (req, res) => {
     const projectId = parseInt(req.params.id);
-    
-    if (isNaN(projectId)) {
-        return res.status(400).json({ error: "Invalid project ID" });
-    }
+    if (isNaN(projectId)) return res.status(400).render("404", { message: "Invalid project ID" });
 
     projectData.getProjectById(projectId)
-        .then(project => res.json(project))
-        .catch(err => res.status(404).json({ error: err }));
+        .then(project => res.render("project", { project, page: "" }))
+        .catch(err => res.status(404).render("404", { message: "Project not found" }));
 });
 
-// Custom 404 handler
-app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, "/views/404.html"));
-});
+// 404 Handler
+app.use((req, res) => res.status(404).render("404", { 
+    message: "Page not found", 
+    page: "" 
+}));
 
-// Initialize and start server
-projectData.initialize()
-    .then(() => {
-        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    })
-    .catch(err => {
-        console.error("Initialization failed:", err);
-        process.exit(1);
-    });
+// Initialize
+projectData.initialize().then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});

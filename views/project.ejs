@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title><%= project.title %> | Climate Solutions</title>
+</head>
+<body class="bg-base-200">
+    <%- include('partials/navbar', { page: "" }) %>
+
+    <!-- Project Details -->
+    <div class="hero bg-base-100 py-12">
+        <div class="hero-content text-center">
+            <div class="max-w-2xl">
+                <h1 class="text-5xl font-bold mb-4"><%= project.title %></h1>
+                <p class="text-xl">Below, you will find detailed information about this project</p>
+                <button onclick="history.back()" class="btn btn-ghost mt-4">← Back to Projects</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <img src="<%= project.feature_img_url %>" 
+                 alt="Project Image" 
+                 class="rounded-lg shadow-2xl">
+            <div>
+                <p class="text-lg mb-4"><%= project.intro_short %></p>
+                <div class="prose">
+                    <h2 class="text-3xl font-bold mb-4">Impact</h2>
+                    <p><%= project.impact %></p>
+                </div>
+                <div class="mt-8" id="quoteContainer">
+                    <p class="text-lg italic">Loading inspirational quote...</p>
+                </div>
+                <a href="<%= project.original_source_url %>" 
+                   class="btn btn-primary mt-6" 
+                   target="_blank">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch("https://dummyjson.com/quotes/random")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("quoteContainer").innerHTML = `
+                        <p class="text-lg italic">"${data.quote}"</p>
+                        <p class="text-right mt-2">— ${data.author}</p>
+                    `;
+                })
+                .catch(() => {
+                    document.getElementById("quoteContainer").innerHTML = 
+                        "<p>No quote available at this time</p>";
+                });
+        });
+    </script>
+</body>
+</html>
