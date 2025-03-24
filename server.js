@@ -119,7 +119,18 @@ app.use((req, res) => res.status(404).render("404", {
     page: "" 
 }));
 
-// Initialize + Start Server
+/*   For Local Development*/
+// Comment this out when deploying to Vercel
+/*
 projectData.initialize().then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
+*/
+
+/*For Vercel Deployment*/
+// Export as a serverless function for Vercel
+module.exports = (req, res) => {
+    projectData.initialize()
+        .then(() => app(req, res))
+        .catch(err => res.status(500).send(`Server error: ${err}`));
+};
