@@ -10,12 +10,21 @@
 require('dotenv').config();
 require('pg');
 const Sequelize = require('sequelize');
+const path = require('path');
 
-const sequelize = new Sequelize(process.env.PG_CONNECTION_STRING, {
+// Use DATABASE_URL (for production) or PG_CONNECTION_STRING (for local development)
+const connectionString = process.env.DATABASE_URL || process.env.PG_CONNECTION_STRING;
+
+if (!connectionString) {
+    throw new Error("No database connection string provided. Please set DATABASE_URL (for production) or PG_CONNECTION_STRING (for local development) in your environment.");
+}
+
+// If DATABASE_URL is set (production), then add SSL options
+const sequelize = new Sequelize(connectionString, {
     dialect: 'postgres',
-    dialectOptions: {
+    dialectOptions: process.env.DATABASE_URL ? {
         ssl: { require: true, rejectUnauthorized: false }
-    }
+    } : {}
 });
 
 // Define Sector Model (no pluralization)
@@ -89,7 +98,6 @@ function getProjectsBySector(sector) {
     });
 }
 
-// Additional functions (Add/Edit/Delete)
 function addProject(projectData) {
     return Project.create(projectData);
 }
@@ -117,4 +125,3 @@ module.exports = {
     editProject,
     deleteProject
 };
-
