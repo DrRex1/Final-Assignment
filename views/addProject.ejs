@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <title>Add Project | Climate Solutions</title>
+</head>
+<body class="bg-base-200">
+  <%- include('partials/navbar', { page: "/solutions/addProject" }) %>
+  <div class="container mx-auto px-4 py-12">
+    <h1 class="text-4xl font-bold mb-6">Add Project</h1>
+    <form action="/solutions/addProject" method="POST" class="space-y-4">
+      <div>
+        <label class="block font-semibold" for="title">Title</label>
+        <input type="text" id="title" name="title" required class="input input-bordered w-full">
+      </div>
+      <div>
+        <label class="block font-semibold" for="feature_img_url">Feature Image URL</label>
+        <input type="url" id="feature_img_url" name="feature_img_url" required class="input input-bordered w-full">
+      </div>
+      <div>
+        <label class="block font-semibold" for="sector_id">Sector</label>
+        <select id="sector_id" name="sector_id" required class="select select-bordered w-full">
+          <% sectors.forEach(sector => { %>
+            <option value="<%= sector.id %>"><%= sector.sector_name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label class="block font-semibold" for="intro_short">Intro</label>
+        <textarea id="intro_short" name="intro_short" required class="textarea textarea-bordered w-full"></textarea>
+      </div>
+      <div>
+        <label class="block font-semibold" for="summary_short">Summary</label>
+        <textarea id="summary_short" name="summary_short" required class="textarea textarea-bordered w-full"></textarea>
+      </div>
+      <div>
+        <label class="block font-semibold" for="impact">Impact</label>
+        <textarea id="impact" name="impact" required class="textarea textarea-bordered w-full"></textarea>
+      </div>
+      <div>
+        <label class="block font-semibold" for="original_source_url">Original Source URL</label>
+        <input type="url" id="original_source_url" name="original_source_url" required class="input input-bordered w-full">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">Add Project</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

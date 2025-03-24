@@ -37,9 +37,9 @@
                 <tr>
                     <td><%= project.title %></td>
                     <td>
-                        <a href="/solutions/projects?sector=<%= project.sector %>" 
+                        <a href="/solutions/projects?sector=<%= project.Sector.sector_name %>" 
                            class="btn btn-xs btn-outline">
-                            <%= project.sector %>
+                            <%= project.Sector.sector_name %>
                         </a>
                     </td>
                     <td><%= project.summary_short %></td>

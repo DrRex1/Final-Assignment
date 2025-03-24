@@ -1,88 +1,120 @@
 /********************************************************************************
-* WEB322 – Assignment 02
-*
-* I declare that this assignment is my own work in accordance with Seneca's
-* Academic Integrity Policy:
-*
-* https://www.senecapolytechnic.ca/about/policies/academic-integrity-policy.html
-*
-* Name: Vishavjeet Student ID: 150215234 Date: 2025-31-01
-*
+*  WEB322 – Assignment 05
+*  
+*  I declare that this assignment is my own work in accordance with Seneca's
+*  Academic Integrity Policy:
+*  
+*  Name: Vishavjeet Khatri Student ID: 150215234 Date: 2025-03-23
 ********************************************************************************/
-const projectData = require("../data/projectData");
-const sectorData = require("../data/sectorData");
 
+require('dotenv').config();
+require('pg');
+const Sequelize = require('sequelize');
 
-let projects = [];
+const sequelize = new Sequelize(process.env.PG_CONNECTION_STRING, {
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: { require: true, rejectUnauthorized: false }
+    }
+});
 
+// Define Sector Model (no pluralization)
+const Sector = sequelize.define('Sector', {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    sector_name: Sequelize.STRING
+}, {
+    createdAt: false,
+    updatedAt: false,
+    freezeTableName: true
+});
 
+// Define Project Model (no pluralization)
+const Project = sequelize.define('Project', {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    title: Sequelize.STRING,
+    feature_img_url: Sequelize.STRING,
+    summary_short: Sequelize.TEXT,
+    intro_short: Sequelize.TEXT,
+    impact: Sequelize.TEXT,
+    original_source_url: Sequelize.STRING,
+    sector_id: Sequelize.INTEGER
+}, {
+    createdAt: false,
+    updatedAt: false,
+    freezeTableName: true
+});
+
+// Define association
+Project.belongsTo(Sector, { foreignKey: 'sector_id' });
+
+// DB Initialization
 function initialize() {
-    return new Promise((resolve, reject) => {
-        try {
-            projects = projectData.map((project) => {
-                const sector = sectorData.find(sector => sector.id === project.sector_id);
-                return {
-                    ...project,
-                    sector: sector ? sector.sector_name : "Unknown Sector"
-                };
-            });
-            resolve();
-        } catch (error) {
-            reject("Failed to initialize projects data");
-        }
-    });
+    return sequelize.sync();
 }
 
-
+// CRUD Functions
 function getAllProjects() {
-    return new Promise((resolve) => {
-        resolve(projects);
-    });
+    return Project.findAll({ include: [Sector] });
 }
-
 
 function getProjectById(projectId) {
-    return new Promise((resolve, reject) => {
-        const project = projects.find(proj => proj.id === projectId);
-        if (project) {
-            resolve(project);
-        } else {
-            reject(`Project with ID ${projectId} not found`);
-        }
+    return Project.findAll({
+        include: [Sector],
+        where: { id: projectId }
+    }).then(data => {
+        if (data.length > 0) return data[0];
+        throw new Error("Unable to find requested project");
     });
 }
-
 
 function getProjectsBySector(sector) {
-    return new Promise((resolve, reject) => {
-        const filteredProjects = projects.filter(project =>
-            project.sector.toLowerCase().includes(sector.toLowerCase())
-        );
-        if (filteredProjects.length > 0) {
-            resolve(filteredProjects);
-        } else {
-            reject(`No projects found for sector: ${sector}`);
+    return Project.findAll({
+        include: [Sector],
+        where: {
+            '$Sector.sector_name$': {
+                [Sequelize.Op.iLike]: `%${sector}%`
+            }
         }
+    }).then(data => {
+        if (data.length > 0) return data;
+        throw new Error("Unable to find requested projects");
     });
 }
 
-module.exports = { initialize, getAllProjects, getProjectById, getProjectsBySector };
+// Additional functions (Add/Edit/Delete)
+function addProject(projectData) {
+    return Project.create(projectData);
+}
 
-initialize()
-    .then(() => {
-        console.log("Projects Initialized");
+function getAllSectors() {
+    return Sector.findAll();
+}
 
-        
-        getAllProjects().then(projects => console.log("All Projects:", projects));
+function editProject(id, projectData) {
+    return Project.update(projectData, { where: { id } });
+}
 
-        
-        getProjectById(9)
-            .then(project => console.log("Project by ID:", project))
-            .catch(err => console.error(err));
+function deleteProject(id) {
+    return Project.destroy({ where: { id } });
+}
 
-        
-        getProjectsBySector("electricity")
-            .then(projects => console.log("Projects by Sector:", projects))
-            .catch(err => console.error(err));
-    })
-    .catch(err => console.error(err));
+// Export all functions
+module.exports = {
+    initialize,
+    getAllProjects,
+    getProjectById,
+    getProjectsBySector,
+    addProject,
+    getAllSectors,
+    editProject,
+    deleteProject
+};
+
