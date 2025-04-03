@@ -1,15 +1,85 @@
-<div class="navbar bg-base-100 shadow-lg px-4">
-    <div class="flex-1">
-        <a href="/" class="btn btn-ghost text-2xl">🌍 Climate Solutions</a>
-    </div>
-    <div class="flex-none">
-        <ul class="menu menu-horizontal px-1 gap-2">
-            <li><a class="<%= (page === '/solutions/projects') ? 'active' : '' %>" 
-                  href="/solutions/projects">View Projects</a></li>
-            <li><a class="<%= (page === '/solutions/addProject') ? 'active' : '' %>" 
-                  href="/solutions/addProject">Add Project</a></li>
-            <li><a class="<%= (page === '/about') ? 'active' : '' %>" 
-                  href="/about">About</a></li>
-        </ul>
-    </div>
+<div class="navbar bg-base-100 shadow-md px-6">
+  <div class="flex-1">
+    <a href="/" class="text-xl font-bold hover:text-primary transition duration-300">
+      🌍 Climate Solutions
+    </a>
+  </div>
+
+  <div class="flex-none">
+    <ul class="menu menu-horizontal gap-4 px-1 text-base font-medium">
+      
+      <!-- View Projects -->
+      <li>
+        <a href="/solutions/projects"
+           class="<%= (page === '/solutions/projects') ? 'active' : '' %>">
+          View Projects
+        </a>
+      </li>
+
+      <!-- About -->
+      <li>
+        <a href="/about"
+           class="<%= (page === '/about') ? 'active' : '' %>">
+          About
+        </a>
+      </li>
+
+      <!-- Account Dropdown -->
+      <li>
+        <details>
+          <summary class="cursor-pointer">
+            👤 Account<% if (session?.user) { %>: <%= session.user.userName %><% } %>
+          </summary>
+
+          <ul class="p-2 bg-base-100 rounded-box w-52 shadow-lg z-50 space-y-1">
+
+            <% if (session && session.user) { %>
+              <!-- Add Project -->
+              <li>
+                <a href="/solutions/addProject"
+                   class="<%= (page === '/solutions/addProject') ? 'active' : '' %> text-green-600 hover:text-green-700 font-semibold">
+                  ➕ Add Project
+                </a>
+              </li>
+
+              <!-- User History -->
+              <li>
+                <a href="/userHistory"
+                   class="<%= (page === '/userHistory') ? 'active' : '' %> text-yellow-500 hover:text-yellow-600 font-semibold">
+                  ⏳ User History
+                </a>
+              </li>
+
+              <!-- Log Out -->
+              <li>
+                <a href="/logout"
+                   class="text-red-600 hover:text-red-700 font-semibold">
+                  🚪 Log Out
+                </a>
+              </li>
+
+            <% } else { %>
+              <!-- Login -->
+              <li>
+                <a href="/login"
+                   class="<%= (page === '/login') ? 'active' : '' %> text-gray-600 hover:text-gray-700 font-semibold">
+                  🔐 Login
+                </a>
+              </li>
+
+              <!-- Register -->
+              <li>
+                <a href="/register"
+                   class="<%= (page === '/register') ? 'active' : '' %> text-blue-600 hover:text-blue-700 font-semibold">
+                  📝 Register
+                </a>
+              </li>
+            <% } %>
+
+          </ul>
+        </details>
+      </li>
+
+    </ul>
+  </div>
 </div>

@@ -12,14 +12,14 @@ require('pg');
 const Sequelize = require('sequelize');
 const path = require('path');
 
-// Use DATABASE_URL (for production) or PG_CONNECTION_STRING (for local development)
+
 const connectionString = process.env.DATABASE_URL || process.env.PG_CONNECTION_STRING;
 
 if (!connectionString) {
     throw new Error("No database connection string provided. Please set DATABASE_URL (for production) or PG_CONNECTION_STRING (for local development) in your environment.");
 }
 
-// If DATABASE_URL is set (production), then add SSL options
+
 const sequelize = new Sequelize(connectionString, {
     dialect: 'postgres',
     dialectOptions: process.env.DATABASE_URL ? {
@@ -27,7 +27,7 @@ const sequelize = new Sequelize(connectionString, {
     } : {}
 });
 
-// Define Sector Model (no pluralization)
+// Defining Sector Model 
 const Sector = sequelize.define('Sector', {
     id: {
         type: Sequelize.INTEGER,
@@ -41,7 +41,7 @@ const Sector = sequelize.define('Sector', {
     freezeTableName: true
 });
 
-// Define Project Model (no pluralization)
+// Defining Project Model 
 const Project = sequelize.define('Project', {
     id: {
         type: Sequelize.INTEGER,

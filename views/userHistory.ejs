@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User History | Climate Solutions</title>
+  <link href="/css/main.css" rel="stylesheet" />
+</head>
+<body class="bg-base-200 text-base-content">
+
+  <!-- ✅ Navbar -->
+  <%- include('partials/navbar', { page: "/userHistory" }) %>
+
+  <!-- ✅ Hero -->
+  <section class="hero bg-base-100 py-12">
+    <div class="hero-content text-center">
+      <div class="max-w-2xl">
+        <h1 class="text-5xl font-bold mb-4"><%= session.user.userName %></h1>
+        <p class="text-lg">
+          User History: <%= session.user.email %>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Login History Table -->
+  <section class="max-w-6xl mx-auto px-4 py-10">
+    <div class="overflow-x-auto">
+      <table class="table w-full table-zebra text-sm md:text-base">
+        <thead>
+          <tr class="text-lg font-semibold text-left border-b border-base-300">
+            <th class="py-3">Login Date/Time</th>
+            <th class="py-3">Client Information</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% session.user.loginHistory.forEach(entry => { %>
+            <tr>
+              <td class="py-2"><%= entry.dateTime %></td>
+              <td class="py-2"><%= entry.userAgent %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</body>
+</html>

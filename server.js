@@ -1,5 +1,5 @@
 /********************************************************************************
-*  WEB322 – Assignment 05
+*  WEB322 – Assignment 06
 *  
 *  I declare that this assignment is my own work in accordance with Seneca's
 *  Academic Integrity Policy:
@@ -10,129 +10,214 @@
 
 const express = require("express");
 const projectData = require("./modules/projects");
+const authData = require("./modules/auth-service");
+const clientSessions = require("client-sessions");
 const path = require("path");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configure EJS
+// EJS Setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 // Middleware
 app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true })); // Required for form submissions
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Session Config
+app.use(clientSessions({
+  cookieName: "session",
+  secret: "yourSuperSecretString123",
+  duration: 2 * 60 * 1000,
+  activeDuration: 1000 * 60
+}));
+
+// Expose session to views
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
+
+// Auth middleware
+function ensureLogin(req, res, next) {
+  if (!req.session.user) return res.redirect("/login");
+  next();
+}
+
+// ========== ROUTES ==========
+
+// Home & About
 app.get("/", (req, res) => res.render("home", { page: "/" }));
 app.get("/about", (req, res) => res.render("about", { page: "/about" }));
 
-// List Projects
+// Project Listing
 app.get("/solutions/projects", (req, res) => {
-    const sector = req.query.sector;
-    const promise = sector ? projectData.getProjectsBySector(sector) : projectData.getAllProjects();
+  const sector = req.query.sector;
+  const fetchProjects = sector
+    ? projectData.getProjectsBySector(sector)
+    : projectData.getAllProjects();
 
-    promise.then(projects => {
-        if (projects.length === 0 && sector) {
-            res.status(404).render("404", { 
-                message: `No projects found for sector: ${sector}`,
-                page: ""
-            });
-        } else {
-            res.render("projects", { 
-                projects, 
-                page: "/solutions/projects" 
-            });
-        }
-    }).catch(err => res.status(404).render("404", { message: err }));
-});
-
-// View Single Project
-app.get("/solutions/projects/:id", (req, res) => {
-    const projectId = parseInt(req.params.id);
-    if (isNaN(projectId)) return res.status(400).render("404", { message: "Invalid project ID" });
-
-    projectData.getProjectById(projectId)
-        .then(project => res.render("project", { project, page: "" }))
-        .catch(err => res.status(404).render("404", { message: "Project not found" }));
-});
-
-/* ------------------------------
-   Assignment 5 Routes 
---------------------------------*/
-
-// GET Add Project Form
-app.get("/solutions/addProject", (req, res) => {
-    projectData.getAllSectors()
-        .then(sectors => {
-            res.render("addProject", { sectors, page: "/solutions/addProject" });
-        })
-        .catch(err => {
-            res.render("500", { message: `Error retrieving sectors: ${err}` });
+  fetchProjects
+    .then(projects => {
+      if (projects.length === 0 && sector) {
+        return res.status(404).render("404", {
+          message: `No projects found for sector: ${sector}`,
+          page: ""
         });
-});
-
-// POST Add Project
-app.post("/solutions/addProject", (req, res) => {
-    projectData.addProject(req.body)
-        .then(() => res.redirect("/solutions/projects"))
-        .catch(err => res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` }));
-});
-
-// GET Edit Project Form
-app.get("/solutions/editProject/:id", (req, res) => {
-    const projectId = parseInt(req.params.id);
-    if (isNaN(projectId)) return res.status(400).render("404", { message: "Invalid project ID" });
-
-    Promise.all([
-        projectData.getProjectById(projectId),
-        projectData.getAllSectors()
-    ])
-    .then(([project, sectors]) => {
-        res.render("editProject", { project, sectors, page: "" });
+      }
+      res.render("projects", {
+        projects,
+        page: "/solutions/projects"
+      });
     })
     .catch(err => res.status(404).render("404", { message: err }));
 });
 
-// POST Edit Project
-app.post("/solutions/editProject", (req, res) => {
-    projectData.editProject(req.body.id, req.body)
-        .then(() => res.redirect("/solutions/projects"))
-        .catch(err => res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` }));
+// View Single Project
+app.get("/solutions/projects/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).render("404", { message: "Invalid project ID" });
+
+  projectData.getProjectById(id)
+    .then(project => res.render("project", { project, page: "" }))
+    .catch(() => res.status(404).render("404", { message: "Project not found" }));
 });
 
-// GET Delete Project
-app.get("/solutions/deleteProject/:id", (req, res) => {
-    const projectId = parseInt(req.params.id);
-    if (isNaN(projectId)) return res.status(400).render("404", { message: "Invalid project ID" });
-
-    projectData.deleteProject(projectId)
-        .then(() => res.redirect("/solutions/projects"))
-        .catch(err => res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` }));
+// Add Project
+app.get("/solutions/addProject", ensureLogin, (req, res) => {
+  projectData.getAllSectors()
+    .then(sectors => res.render("addProject", {
+      sectors,
+      page: "/solutions/addProject"
+    }))
+    .catch(err => res.render("500", { message: `Error retrieving sectors: ${err}` }));
 });
 
-/* ------------------------------ */
+app.post("/solutions/addProject", ensureLogin, (req, res) => {
+  projectData.addProject(req.body)
+    .then(() => res.redirect("/solutions/projects"))
+    .catch(err => res.render("500", { message: `Error: ${err}` }));
+});
 
-// 404 Handler
-app.use((req, res) => res.status(404).render("404", { 
-    message: "Page not found", 
-    page: "" 
-}));
+// Edit Project
+app.get("/solutions/editProject/:id", ensureLogin, (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).render("404", { message: "Invalid project ID" });
 
-/* ------------------------------
-   For Local Development
---------------------------------*/
-// Uncomment this block to run locally:
-// projectData.initialize().then(() => {
-//     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-// });
+  Promise.all([
+    projectData.getProjectById(id),
+    projectData.getAllSectors()
+  ])
+    .then(([project, sectors]) =>
+      res.render("editProject", { project, sectors, page: "" })
+    )
+    .catch(err => res.status(404).render("404", { message: err }));
+});
 
-/* ------------------------------
-   For Vercel Deployment
---------------------------------*/
-// Export as a serverless function for Vercel (comment the above block for local development)
+app.post("/solutions/editProject", ensureLogin, (req, res) => {
+  projectData.editProject(req.body.id, req.body)
+    .then(() => res.redirect("/solutions/projects"))
+    .catch(err => res.render("500", { message: `Error: ${err}` }));
+});
+
+// Delete Project
+app.get("/solutions/deleteProject/:id", ensureLogin, (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).render("404", { message: "Invalid project ID" });
+
+  projectData.deleteProject(id)
+    .then(() => res.redirect("/solutions/projects"))
+    .catch(err => res.render("500", { message: `Error: ${err}` }));
+});
+
+// ========== AUTH ROUTES ==========
+
+app.get("/register", (req, res) => {
+  res.render("register", {
+    errorMessage: "",
+    successMessage: "",
+    userName: ""
+  });
+});
+
+app.post("/register", (req, res) => {
+  authData.registerUser(req.body)
+    .then(() => {
+      res.render("register", {
+        successMessage: "User created",
+        errorMessage: "",
+        userName: ""
+      });
+    })
+    .catch(err => {
+      res.render("register", {
+        successMessage: "",
+        errorMessage: err,
+        userName: req.body.userName
+      });
+    });
+});
+
+app.get("/login", (req, res) => {
+  res.render("login", { errorMessage: "", userName: "" });
+});
+
+app.post("/login", (req, res) => {
+  req.body.userAgent = req.get("User-Agent");
+
+  authData.checkUser(req.body)
+    .then(user => {
+      req.session.user = {
+        userName: user.userName,
+        email: user.email,
+        loginHistory: user.loginHistory
+      };
+      res.redirect("/solutions/projects");
+    })
+    .catch(err => {
+      res.render("login", {
+        errorMessage: err,
+        userName: req.body.userName
+      });
+    });
+});
+
+app.get("/logout", (req, res) => {
+  req.session.reset();
+  res.redirect("/");
+});
+
+app.get("/userHistory", ensureLogin, (req, res) => {
+  res.render("userHistory", { page: "/userHistory" });
+});
+
+// ========== FALLBACK ROUTE ==========
+
+app.use((req, res) => {
+  res.status(404).render("404", {
+    message: "Page not found",
+    page: ""
+  });
+});
+
+// ========== DEPLOYMENT HANDLER ==========
+
+if (process.env.NODE_ENV !== "production") {
+  projectData.initialize()
+    .then(authData.initialize)
+    .then(() => {
+      app.listen(PORT, () =>
+        console.log(`✅ Server running at http://localhost:${PORT}`)
+      );
+    })
+    .catch(err => console.error(`❌ Server start failed: ${err}`));
+}
+
 module.exports = (req, res) => {
-    projectData.initialize()
-        .then(() => app(req, res))
-        .catch(err => res.status(500).send(`Server error: ${err}`));
+  projectData.initialize()
+    .then(authData.initialize)
+    .then(() => app(req, res))
+    .catch(err => res.status(500).send(`Server error: ${err}`));
 };
